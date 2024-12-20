@@ -27,6 +27,7 @@ public class MainView extends HorizontalLayout{
     
     setAlignItems(Alignment.CENTER);
     setJustifyContentMode(JustifyContentMode.AROUND);
+    setPadding(true);
 
     add(createTable(), createMovementsController());
     
@@ -126,6 +127,11 @@ public class MainView extends HorizontalLayout{
 
     roomButtonsLayout.removeAll();
 
+    if(isPositionFlowsEmpty(positionsFlows)) {
+      Notification.show("No hay habitaciones accesibles");
+      return;
+    }
+   
     for(int i = 1; i < 10; i++) {
       if(positionsFlows[i].size() > 0) {
         Button roomButton = new Button(pathFinderService.roomIdToName(i));
@@ -139,15 +145,7 @@ public class MainView extends HorizontalLayout{
   }
 
   private void showPath(int roomId, ArrayList<Coordinate>[] positionsFlows) {
-    for(int i = 0; i < 10; i++) {
-      for(Coordinate coordinate: positionsFlows[i]) {
-        if(!(coordinate.row == currentPositionRow && coordinate.column == currentPositionColumn)
-        && pathFinderService.board[coordinate.row][coordinate.column] == 0) {
-          tablero[coordinate.row][coordinate.column].getStyle().set("background-color", "black");
-          tablero[coordinate.row][coordinate.column].setText("");
-        }
-      }
-    }
+    cleanBoard();
 
     int cont = 1;
     for(Coordinate coordinate: positionsFlows[roomId]) {
@@ -169,5 +167,14 @@ public class MainView extends HorizontalLayout{
         }
       }
     }
+  }
+
+  private boolean isPositionFlowsEmpty(ArrayList<Coordinate>[] positionsFlows) {
+    for(int i = 1; i < 10; i++) {
+      if(positionsFlows[i].size() > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 }
