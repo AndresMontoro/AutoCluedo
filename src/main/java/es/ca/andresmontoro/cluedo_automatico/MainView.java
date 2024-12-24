@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -28,6 +29,7 @@ public class MainView extends HorizontalLayout{
     setAlignItems(Alignment.CENTER);
     setJustifyContentMode(JustifyContentMode.AROUND);
     setPadding(true);
+    setWidthFull();
 
     add(createTable(), createMovementsController());
     
@@ -74,8 +76,11 @@ public class MainView extends HorizontalLayout{
     VerticalLayout movementsController = new VerticalLayout();
     movementsController.setAlignItems(Alignment.CENTER);
     movementsController.setJustifyContentMode(JustifyContentMode.CENTER);
+    movementsController.getStyle().set("overflow", "hidden");
+    movementsController.getStyle().set("text-align", "center");
 
-    movementsController.add(new H1("AUTOCLUEDO"));
+    H1 title = new H1("AUTOCLUEDO");
+    movementsController.add(title);
     IntegerField numberOfMoves = new IntegerField("Número de movimientos");
     numberOfMoves.setMin(1);
     numberOfMoves.setMax(12);
@@ -89,7 +94,11 @@ public class MainView extends HorizontalLayout{
     });
     exploreButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
     movementsController.add(exploreButton);
-    movementsController.add(new H2("Habitaciones accesibles"));
+    H3 roomButtonsTitle = new H3("Habitaciones accesibles");
+    movementsController.add(roomButtonsTitle);
+    roomButtonsLayout.setWidthFull();
+    roomButtonsLayout.getStyle().set("justify-content", "center");
+    roomButtonsLayout.getStyle().set("overflow", "auto");
     movementsController.add(roomButtonsLayout);
     
     return movementsController;

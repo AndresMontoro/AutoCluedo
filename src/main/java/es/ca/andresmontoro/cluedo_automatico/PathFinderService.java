@@ -1,10 +1,17 @@
 package es.ca.andresmontoro.cluedo_automatico;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+
+import com.google.common.math.PairedStatsAccumulator;
+
+import ch.qos.logback.core.joran.sanity.Pair;
 
 @Service
 public class PathFinderService {
@@ -27,6 +34,14 @@ public class PathFinderService {
     {0, -1}, // left
     {-1, 0} // up
   };
+
+  // First = door, Second = valid entry
+  public List<AbstractMap.SimpleEntry<Coordinate, Coordinate>> cornerDoorsValidEntry = new ArrayList<>(Arrays.asList(
+    new AbstractMap.SimpleEntry<>(new Coordinate(5, 5), new Coordinate(6, 5)), // Left upper corner
+    new AbstractMap.SimpleEntry<>(new Coordinate(18, 6), new Coordinate(17, 6)), // left down corner
+    new AbstractMap.SimpleEntry<>(new Coordinate(4, 18), new Coordinate(5, 18)), // right upper corner
+    new AbstractMap.SimpleEntry<>(new Coordinate(20, 17), new Coordinate(19, 17)) // right down corner
+  ));
 
   
 
@@ -203,7 +218,7 @@ public class PathFinderService {
     board[7][1] = FORBIDDEN;
 
     // Middle right
-    board[6][23] = FORBIDDEN;
+    board[5][23] = FORBIDDEN;
 
     // Lower left
     board[15][0] = FORBIDDEN;
@@ -237,10 +252,6 @@ public class PathFinderService {
   public ArrayList<Coordinate>[] moverFicha(Coordinate initialPosition, int numberOfMoves) {
     if(!isPositionValid(initialPosition) || numberOfMoves < 0 || numberOfMoves > 12) {
       throw new IllegalArgumentException("Invalid initial position or number of moves");
-    }
-    
-    if(isDoor(initialPosition)) {
-      numberOfMoves--;
     }
 
     @SuppressWarnings("unchecked")
@@ -277,7 +288,7 @@ public class PathFinderService {
               currentPosition.column + direction[1]
             );
 
-            if (!visitedCoordinates.contains(nextPosition)) {
+            if (isMovementValid(currentPosition, nextPosition) && !visitedCoordinates.contains(nextPosition)) {
               visitedCoordinates.add(nextPosition); 
               currentPath.add(nextPosition);
               explorePaths(nextPosition, numberOfMoves - 1, visitedCoordinates, currentPath, positionsFlows);
@@ -296,6 +307,34 @@ public class PathFinderService {
       position.column >= 0 && position.column < 24 &&
       board[position.row][position.column] != FORBIDDEN
     );
+  }
+
+  public boolean isMovementValid(Coordinate currentPosition, Coordinate nextPosition) {
+    boolean isValid = true;
+
+    if(isPositionValid(nextPosition)) {
+      if(isDoor(currentPosition)) {
+        Coordinate validEntry = cornerDoorsValidEntry.stream()
+          .filter(entry -> entry.getKey().equals(currentPosition))
+          .map(entry -> entry.getValue())
+          .findFirst()
+          .orElse(null);
+  
+        isValid = isValid && (validEntry == null || validEntry.equals(nextPosition));
+      }
+  
+      if(isValid && isDoor(nextPosition)) {
+        Coordinate validEntry = cornerDoorsValidEntry.stream()
+          .filter(entry -> entry.getKey().equals(nextPosition))
+          .map(entry -> entry.getValue())
+          .findFirst()
+          .orElse(null);
+  
+        isValid = isValid && (validEntry == null || validEntry.equals(currentPosition));
+      }
+    }
+  
+    return isValid;
   }
 
   // public void printResults() {
